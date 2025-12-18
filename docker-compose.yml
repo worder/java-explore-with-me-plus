@@ -6,10 +6,10 @@ services:
     ports:
       - "9090:9090"
 
-  main-service:
+  ewm-service:
     build: ./main-service
-    image: main-service
-    container_name: main-service
+    image: ewm-service
+    container_name: ewm-service
     depends_on:
       - stats-server
     ports:
