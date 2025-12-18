@@ -1,16 +1,12 @@
 services:
-  stats-server:
+  stat-server:
     build: ./stat/stat-server
-    image: stat-service
     container_name: stat-server
     ports:
       - "9090:9090"
 
   ewm-service:
-    build: ./main-service
-    image: ewm-service
+    build: main-service
     container_name: ewm-service
-    depends_on:
-      - stats-server
     ports:
       - "8080:8080"
