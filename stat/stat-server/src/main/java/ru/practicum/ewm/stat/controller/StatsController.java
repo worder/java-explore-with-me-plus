@@ -1,12 +1,12 @@
 package ru.practicum.ewm.stat.controller;
 
-import ru.practicum.ewm.stat.dto.StatEventRequestDto;
-import ru.practicum.ewm.stat.dto.StatEventViewDto;
-import ru.practicum.ewm.stat.service.StatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.stat.dto.StatEventCreateDto;
+import ru.practicum.ewm.stat.dto.StatEventViewDto;
+import ru.practicum.ewm.stat.service.StatService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +20,7 @@ public class StatsController {
     private final StatService statService;
 
     @PostMapping("/hit")
-    void createHitEvent(@RequestBody StatEventRequestDto hitEventRequest) {
+    void createHitEvent(@RequestBody StatEventCreateDto hitEventRequest) {
         log.info("POST /hit: {}", hitEventRequest);
         this.statService.createStatEvent(hitEventRequest);
     }

@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class StatEventRequestDto {
+public class StatEventCreateDto {
     @NotBlank
     private String app;
 

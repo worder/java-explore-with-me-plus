@@ -5,14 +5,14 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import ru.practicum.ewm.stat.dao.StatEventsDao;
+import ru.practicum.ewm.stat.dto.StatEventCreateDto;
 import ru.practicum.ewm.stat.dto.StatEventMapper;
-import ru.practicum.ewm.stat.dto.StatEventRequestDto;
 import ru.practicum.ewm.stat.dto.StatEventViewDto;
 import ru.practicum.ewm.stat.model.QStatEvent;
 import ru.practicum.ewm.stat.model.StatEvent;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +24,7 @@ public class StatServiceImpl implements StatService {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public void createStatEvent(StatEventRequestDto eventRequest) {
+    public void createStatEvent(StatEventCreateDto eventRequest) {
         StatEvent model = StatEventMapper.mapToModel(eventRequest);
         repository.save(model);
     }
