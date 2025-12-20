@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.stat.dao.StatEventsDao;
 import ru.practicum.ewm.stat.dto.StatEventCreateDto;
@@ -17,6 +18,7 @@ import ru.practicum.ewm.stat.model.StatEvent;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
@@ -26,6 +28,7 @@ public class StatServiceImpl implements StatService {
     @Override
     public void createStatEvent(StatEventCreateDto eventRequest) {
         StatEvent model = StatEventMapper.mapToModel(eventRequest);
+        log.info("Creating hit event from dto: {}", eventRequest);
         repository.save(model);
     }
 
@@ -55,7 +58,7 @@ public class StatServiceImpl implements StatService {
                         hitsExpression.as("hits")))
                 .from(statEvent)
                 .where(searchConditions)
-                .groupBy(statEvent.uri, statEvent.ip)
+                .groupBy(statEvent.app, statEvent.uri)
                 .orderBy(hitsExpression.desc());
 
         return query.fetch();
