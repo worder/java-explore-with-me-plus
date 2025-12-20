@@ -20,13 +20,13 @@ public class StatsController {
     private final StatService statService;
 
     @PostMapping("/hit")
-    void createHitEvent(@RequestBody StatEventCreateDto hitEventRequest) {
+    public void createHitEvent(@RequestBody StatEventCreateDto hitEventRequest) {
         log.info("POST /hit: {}", hitEventRequest);
         this.statService.createStatEvent(hitEventRequest);
     }
 
     @GetMapping("/stats")
-    List<StatEventViewDto> getStatEvents(
+    public List<StatEventViewDto> getStatEvents(
             @RequestParam @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime start,
             @RequestParam @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime end,
             @RequestParam(defaultValue = "") List<String> uris,
