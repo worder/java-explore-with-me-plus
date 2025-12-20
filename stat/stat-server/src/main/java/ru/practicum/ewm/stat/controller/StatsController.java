@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @Slf4j
 public class StatsController {
-    private final static String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     private final StatService statService;
 
