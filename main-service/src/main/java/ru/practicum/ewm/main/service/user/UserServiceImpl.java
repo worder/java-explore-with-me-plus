@@ -12,9 +12,8 @@ import ru.practicum.ewm.main.dto.user.UserMapper;
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
 
-
     @Override
     public UserDto createUser(NewUserRequest request) {
-        return UserMapper.mapToDto(userDao.save(UserMapper.mapToEntity(request)));
+        return UserMapper.mapToDto(userDao.save(UserMapper.mapToUser(request)));
     }
 }
