@@ -1,11 +1,20 @@
 package ru.practicum.ewm.main.dao.user;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.main.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
-public interface UserDao {
-    User save(User user);
+@Repository
+public interface UserDao extends JpaRepository<User, Long> {
 
-    Optional<User> findById(Long id);
+    Optional<User> findByEmail(String email);
+
+    Page<User> findByIdIn(List<Long> ids, Pageable pageable);
+
+    boolean existsById(Long id);
 }
