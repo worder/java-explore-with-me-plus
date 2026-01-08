@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
         if (ids == null || ids.isEmpty()) {
             users = userDao.findAll(pageable).getContent();
         } else {
-            users = userDao.findAllById(ids);
+            users = userDao.findAllByIdIn(ids);
             int start = Math.min(from, users.size());
             int end = Math.min(start + size, users.size());
             if (start >= end) {
