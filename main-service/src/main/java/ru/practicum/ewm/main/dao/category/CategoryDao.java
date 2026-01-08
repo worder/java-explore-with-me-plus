@@ -8,4 +8,8 @@ public interface CategoryDao {
     Category save(Category category);
 
     Optional<Category> findById(Long id);
+
+    Optional<Category> findByName(String name);
+
+    void deleteById(Long id);
 }
