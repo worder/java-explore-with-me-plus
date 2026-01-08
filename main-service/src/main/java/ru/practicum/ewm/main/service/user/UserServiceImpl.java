@@ -32,12 +32,9 @@ public class UserServiceImpl implements UserService {
 
         List<User> users;
         if (ids == null || ids.isEmpty()) {
-            // Получаем страницу и берем контент
             users = userDao.findAll(pageable).getContent();
         } else {
-            // Получаем всех по ids
             users = userDao.findAllById(ids);
-            // Применяем пагинацию вручную
             int start = Math.min(from, users.size());
             int end = Math.min(start + size, users.size());
             if (start >= end) {

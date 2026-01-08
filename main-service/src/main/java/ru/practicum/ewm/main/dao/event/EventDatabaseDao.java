@@ -18,11 +18,11 @@ public interface EventDatabaseDao extends EventDao, JpaRepository<Event, Long> {
     List<Event> findAllByUserId(Long userId, Pageable pageable);
 
     @Query("""
-            SELECT e FROM Event e 
-            WHERE (:users IS NULL OR e.user.id IN :users) 
-            AND (:states IS NULL OR e.state IN :states) 
-            AND (:categories IS NULL OR e.category.id IN :categories) 
-            AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart) 
+            SELECT e FROM Event e
+            WHERE (:users IS NULL OR e.user.id IN :users)
+            AND (:states IS NULL OR e.state IN :states)
+            AND (:categories IS NULL OR e.category.id IN :categories)
+            AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart)
             AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)
             """)
     List<Event> findAllByParams(@Param("users") List<Long> users,
@@ -33,13 +33,13 @@ public interface EventDatabaseDao extends EventDao, JpaRepository<Event, Long> {
                                 Pageable pageable);
 
     @Query("""
-            SELECT e FROM Event e 
-            WHERE e.state = 'PUBLISHED' 
-            AND (:text IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) 
-                 OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) 
-            AND (:categories IS NULL OR e.category.id IN :categories) 
-            AND (:paid IS NULL OR e.paid = :paid) 
-            AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart) 
+            SELECT e FROM Event e
+            WHERE e.state = 'PUBLISHED'
+            AND (:text IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%'))
+                 OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')))
+            AND (:categories IS NULL OR e.category.id IN :categories)
+            AND (:paid IS NULL OR e.paid = :paid)
+            AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart)
             AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)
             """)
     List<Event> findAllPublicByParams(@Param("text") String text,
