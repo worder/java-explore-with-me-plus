@@ -1,7 +1,26 @@
 package ru.practicum.ewm.main.dao.event;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.ewm.main.model.Event;
+import ru.practicum.ewm.main.model.Event.EventState;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public interface EventDao {
     Event save(Event event);
+
+    Optional<Event> findById(Long id);
+
+    Optional<Event> findByIdAndUserId(Long eventId, Long userId);
+
+    List<Event> findAllByUserId(Long userId, Pageable pageable);
+
+    List<Event> findAllByParams(List<Long> users, List<EventState> states, List<Long> categories,
+                                LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable);
+
+    List<Event> findAllPublicByParams(String text, List<Long> categories, Boolean paid,
+                                      LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                      Pageable pageable);
 }
