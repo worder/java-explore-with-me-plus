@@ -13,7 +13,12 @@ public class CategoryMapper {
     public static Category mapToEntity(NewCategoryRequest dto) {
         Category cat = new Category();
         cat.setName(dto.getName());
-
         return cat;
+    }
+
+    public static void updateEntity(Category category, UpdateCategoryRequest dto) {
+        if (dto.getName() != null) {
+            category.setName(dto.getName());
+        }
     }
 }

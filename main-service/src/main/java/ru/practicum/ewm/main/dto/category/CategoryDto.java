@@ -7,5 +7,6 @@ import lombok.Value;
 @Builder
 public class CategoryDto {
     Long id;
+
     String name;
 }

@@ -12,5 +12,5 @@ public interface ParticipationRequestDao {
 
     List<ParticipationRequest> findByRequesterId(Long requesterId);
 
-    Long countByEventId(Long eventId);
+    Integer countByEventId(Long eventId);
 }
