@@ -23,4 +23,6 @@ public interface EventDao {
     List<Event> findAllPublicByParams(String text, List<Long> categories, Boolean paid,
                                       LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                       Pageable pageable);
+
+    List<Event> findAllByIdIn(List<Long> ids);
 }
