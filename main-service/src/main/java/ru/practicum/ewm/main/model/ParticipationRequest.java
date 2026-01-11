@@ -14,6 +14,7 @@ public class ParticipationRequest {
     public enum Status {
         PENDING,
         CONFIRMED,
+        CANCELED,
         REJECTED
     }
 

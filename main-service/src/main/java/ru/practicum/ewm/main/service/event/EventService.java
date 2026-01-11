@@ -2,6 +2,8 @@ package ru.practicum.ewm.main.service.event;
 
 import ru.practicum.ewm.main.dto.event.*;
 import ru.practicum.ewm.main.dto.request.ParticipationRequestDto;
+import ru.practicum.ewm.main.dto.request.ParticipationRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.dto.request.ParticipationRequestStatusUpdateResultDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,8 +29,4 @@ public interface EventService {
                                         Integer from, Integer size);
 
     EventFullDto getPublicEvent(Long id);
-
-    ParticipationRequestDto createEventParticipationRequest(Long userId, Long eventId);
-
-    List<ParticipationRequestDto> getUserParticipationRequests(Long userId);
 }
