@@ -1,8 +1,8 @@
-package ru.practicum.ewm.main.service.compilation;
+package ru.practicum.ewm.main.service.compilation;// ... существующий импорт ...
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.main.dao.compilation.CompilationDatabaseDao;
+import ru.practicum.ewm.main.dao.compilation.CompilationDao;
 import ru.practicum.ewm.main.dao.event.EventDao;
 import ru.practicum.ewm.main.dto.compilation.CompilationDto;
 import ru.practicum.ewm.main.dto.compilation.CompilationMapper;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
 
-    private final CompilationDatabaseDao compilationDao;
+    private final CompilationDao compilationDao;
     private final EventDao eventDao;
 
     @Override
@@ -47,7 +47,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public void deleteCompilation(Long compId) {
-        if (!compilationDao.existsById(compId)) {
+        if (!compilationDao.findById(compId).isPresent()) {
             throw new NotFoundException("Подборка с ID=" + compId + " не найдена");
         }
         compilationDao.deleteById(compId);

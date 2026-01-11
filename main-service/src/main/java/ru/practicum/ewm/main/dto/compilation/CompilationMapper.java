@@ -1,23 +1,30 @@
 package ru.practicum.ewm.main.dto.compilation;
 
 import ru.practicum.ewm.main.dto.event.EventMapper;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
 import ru.practicum.ewm.main.model.Compilation;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CompilationMapper {
 
-    public static CompilationDto mapToDto(Compilation compilation, java.util.Map<Long, Integer> confirmedRequests, java.util.Map<Long, Integer> views) {
-        return CompilationDto.builder()
-                .id(compilation.getId())
-                .title(compilation.getTitle())
-                .pinned(compilation.getPinned())
-                .events(compilation.getEvents().stream()
+    public static CompilationDto mapToDto(Compilation compilation, Map<Long, Integer> confirmedRequests, Map<Long, Integer> views) {
+        List<EventShortDto> eventDtos = compilation.getEvents() == null ? Collections.emptyList() :
+                compilation.getEvents().stream()
                         .map(event -> EventMapper.mapToShortDto(event,
                                 confirmedRequests.getOrDefault(event.getId(), 0),
                                 views.getOrDefault(event.getId(), 0)))
-                        .collect(Collectors.toList()))
-                .build();
+                        .collect(Collectors.toList());
+
+        CompilationDto dto = new CompilationDto();
+        dto.setId(compilation.getId());
+        dto.setTitle(compilation.getTitle());
+        dto.setPinned(compilation.getPinned());
+        dto.setEvents(eventDtos);
+        return dto;
     }
 
     public static Compilation mapToCompilation(NewCompilationDto dto) {
