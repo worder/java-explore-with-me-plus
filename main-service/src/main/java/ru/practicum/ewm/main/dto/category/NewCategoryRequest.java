@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.dto.category;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class NewCategoryRequest {
     @NotNull
+    @NotBlank
     @Size(min = 1, max = 50)
     String name;
 }

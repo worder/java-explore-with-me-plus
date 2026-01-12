@@ -16,9 +16,11 @@ import ru.practicum.ewm.main.error.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
 import ru.practicum.ewm.main.model.Event;
 import ru.practicum.ewm.main.model.User;
+import ru.practicum.ewm.main.service.statistics.StatisticsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,7 @@ public class EventServiceImpl implements EventService {
     private final EventDao eventDao;
     private final CategoryDao categoryDao;
     private final UserDao userDao;
+    private final StatisticsService statisticsService;
 
     @Override
     @Transactional
@@ -49,7 +52,8 @@ public class EventServiceImpl implements EventService {
         Event savedEvent = eventDao.save(event);
 
         log.info("Создано событие с ID: {}", savedEvent.getId());
-        return EventMapper.mapToFullDto(savedEvent, 0, 0);
+
+        return this.mapToFullDto(savedEvent);
     }
 
     @Override
@@ -62,9 +66,7 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventDao.findAllByUserId(userId, pageable);
 
-        return events.stream()
-                .map(event -> EventMapper.mapToShortDto(event, 0, 0))
-                .collect(Collectors.toList());
+        return this.mapToShortDtos(events);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Событие с ID=%d пользователя с ID=%d не найдено", eventId, userId)));
 
-        return EventMapper.mapToFullDto(event, 0, 0);
+        return this.mapToFullDto(event);
     }
 
     @Override
@@ -117,7 +119,7 @@ public class EventServiceImpl implements EventService {
         Event updatedEvent = eventDao.save(event);
         log.info("Событие с ID: {} обновлено пользователем", eventId);
 
-        return EventMapper.mapToFullDto(updatedEvent, 0, 0);
+        return this.mapToFullDto(updatedEvent);
     }
 
     @Override
@@ -137,9 +139,7 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventDao.findAllByParams(users, stateEnums, categories, rangeStart, rangeEnd, pageable);
 
-        return events.stream()
-                .map(event -> EventMapper.mapToFullDto(event, 0, 0))
-                .collect(Collectors.toList());
+        return this.mapToFullDtos(events);
     }
 
     @Override
@@ -183,7 +183,7 @@ public class EventServiceImpl implements EventService {
         Event updatedEvent = eventDao.save(event);
         log.info("Событие с ID: {} обновлено администратором", eventId);
 
-        return EventMapper.mapToFullDto(updatedEvent, 0, 0);
+        return this.mapToFullDto(updatedEvent);
     }
 
     @Override
@@ -199,9 +199,7 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
 
-        return events.stream()
-                .map(event -> EventMapper.mapToShortDto(event, 0, 0))
-                .collect(Collectors.toList());
+        return this.mapToShortDtos(events);
     }
 
     @Override
@@ -215,8 +213,35 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие не опубликовано");
         }
 
-        return EventMapper.mapToFullDto(event, 0, 0);
+        return this.mapToFullDto(event);
     }
 
+    @Override
+    public List<EventShortDto> mapToShortDtos(List<Event> events) {
+        List<EventShortDto> dtos = events.stream().map(EventMapper::mapToShortDto).toList();
 
+        LocalDateTime start = events.stream()
+                .map(Event::getPublishedOn)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+
+        statisticsService.populateWithViews(start, dtos);
+        return dtos;
+    }
+
+    private EventFullDto mapToFullDto(Event event) {
+        EventFullDto dto = EventMapper.mapToFullDto(event);
+        statisticsService.populateWithViews(dto);
+        return dto;
+    }
+
+    private List<EventFullDto> mapToFullDtos(List<Event> events) {
+        List<EventFullDto> dtos = events.stream()
+                .map(EventMapper::mapToFullDto)
+                .toList();
+
+        statisticsService.populateWithViews(dtos);
+        return dtos;
+    }
 }

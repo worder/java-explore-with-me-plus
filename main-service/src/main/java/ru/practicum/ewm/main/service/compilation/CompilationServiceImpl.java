@@ -1,6 +1,8 @@
 package ru.practicum.ewm.main.service.compilation;// ... существующий импорт ...
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.dao.compilation.CompilationDao;
 import ru.practicum.ewm.main.dao.event.EventDao;
@@ -11,18 +13,17 @@ import ru.practicum.ewm.main.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.ewm.main.error.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Compilation;
 import ru.practicum.ewm.main.model.Event;
+import ru.practicum.ewm.main.service.event.EventService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
-
     private final CompilationDao compilationDao;
     private final EventDao eventDao;
+    private final EventService eventService;
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto dto) {
@@ -39,10 +40,7 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setEvents(events);
         Compilation saved = compilationDao.save(compilation);
 
-        Map<Long, Integer> confirmedRequests = getConfirmedRequests(saved.getEvents());
-        Map<Long, Integer> views = getViews(saved.getEvents());
-
-        return CompilationMapper.mapToDto(saved, confirmedRequests, views);
+        return CompilationMapper.mapToDto(saved, eventService.mapToShortDtos(saved.getEvents()));
     }
 
     @Override
@@ -69,18 +67,29 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         Compilation updated = compilationDao.save(compilation);
-
-        Map<Long, Integer> confirmedRequests = getConfirmedRequests(updated.getEvents());
-        Map<Long, Integer> views = getViews(updated.getEvents());
-
-        return CompilationMapper.mapToDto(updated, confirmedRequests, views);
+        return CompilationMapper.mapToDto(updated, eventService.mapToShortDtos(updated.getEvents()));
     }
 
-    private Map<Long, Integer> getConfirmedRequests(List<Event> events) {
-        return events.stream().collect(Collectors.toMap(Event::getId, e -> 0));
+    @Override
+    public List<CompilationDto> getCompilations(Integer from, Integer size, Boolean pinned) {
+        Pageable pageable = PageRequest.of(from / size, size);
+        List<Compilation> models;
+        if (pinned != null) {
+            models = compilationDao.findByPinned(pinned, pageable);
+        } else {
+            models = compilationDao.findAll(pageable).getContent();
+        }
+
+        return models.stream()
+                .map(c -> CompilationMapper.mapToDto(c, eventService.mapToShortDtos(c.getEvents())))
+                .toList();
     }
 
-    private Map<Long, Integer> getViews(List<Event> events) {
-        return events.stream().collect(Collectors.toMap(Event::getId, e -> 0));
+    @Override
+    public CompilationDto getCompilation(Long id) {
+        Compilation comp = compilationDao.findById(id)
+                .orElseThrow(() -> new NotFoundException("Compilation with id " + id + " not found"));
+
+        return CompilationMapper.mapToDto(comp, eventService.mapToShortDtos(comp.getEvents()));
     }
 }

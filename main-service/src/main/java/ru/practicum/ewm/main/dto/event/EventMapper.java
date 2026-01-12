@@ -9,8 +9,7 @@ import ru.practicum.ewm.main.model.User;
 import java.time.LocalDateTime;
 
 public class EventMapper {
-
-    public static EventFullDto mapToFullDto(Event event, Integer confirmedRequests, Integer views) {
+    public static EventFullDto mapToFullDto(Event event) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -23,18 +22,17 @@ public class EventMapper {
                         .lat(event.getLocationLat())
                         .lon(event.getLocationLon())
                         .build())
-                .confirmedRequests(confirmedRequests != null ? confirmedRequests : 0)
+                .confirmedRequests(event.getConfirmedRequests())
                 .participantLimit(event.getParticipantLimit())
                 .createdOn(event.getCreatedOn())
                 .eventDate(event.getEventDate())
                 .publishedOn(event.getPublishedOn())
                 .paid(event.getPaid())
                 .requestModeration(event.getRequestModeration())
-                .views(views != null ? views : 0)
                 .build();
     }
 
-    public static EventShortDto mapToShortDto(Event event, Integer confirmedRequests, Integer views) {
+    public static EventShortDto mapToShortDto(Event event) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -43,8 +41,7 @@ public class EventMapper {
                 .initiator(UserMapper.mapToShortDto(event.getUser()))
                 .eventDate(event.getEventDate())
                 .paid(event.getPaid())
-                .confirmedRequests(confirmedRequests != null ? confirmedRequests : 0)
-                .views(views != null ? views : 0)
+                .confirmedRequests(event.getConfirmedRequests())
                 .build();
     }
 

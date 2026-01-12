@@ -1,0 +1,27 @@
+package ru.practicum.ewm.main.controller.pub;
+
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.dto.compilation.CompilationDto;
+import ru.practicum.ewm.main.service.compilation.CompilationService;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/compilations")
+@AllArgsConstructor
+public class PublicCompilationController {
+    CompilationService compilationService;
+
+    @GetMapping
+    List<CompilationDto> getCompilations(@RequestParam(required = false) boolean pinned,
+                                         @RequestParam(defaultValue = "0") Integer from,
+                                         @RequestParam(defaultValue = "10") Integer size) {
+        return compilationService.getCompilations(from, size, pinned);
+    }
+
+    @GetMapping("/{id}")
+    CompilationDto getCompilation(@PathVariable Long id) {
+        return compilationService.getCompilation(id);
+    }
+}

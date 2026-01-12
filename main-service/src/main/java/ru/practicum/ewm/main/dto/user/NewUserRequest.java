@@ -1,6 +1,7 @@
 package ru.practicum.ewm.main.dto.user;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ public class NewUserRequest {
     String email;
 
     @NotNull
+    @NotBlank
     @Size(min = 2, max = 250)
     String name;
 }

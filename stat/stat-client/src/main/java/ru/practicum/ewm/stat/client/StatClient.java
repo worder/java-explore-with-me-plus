@@ -1,5 +1,7 @@
 package ru.practicum.ewm.stat.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,6 @@ import ru.practicum.ewm.stat.dto.StatEventViewDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -83,10 +84,12 @@ public class StatClient extends BaseClient {
 
         try {
             ResponseEntity<Object> response = get(path, parameters);
-
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                StatEventViewDto[] statsArray = (StatEventViewDto[]) response.getBody();
-                List<StatEventViewDto> result = Arrays.asList(statsArray);
+                ObjectMapper mapper = new ObjectMapper();
+                List<StatEventViewDto> result = mapper.convertValue(
+                        response.getBody(),
+                        new TypeReference<List<StatEventViewDto>>() {}
+                );
                 log.debug("Получено {} записей статистики", result.size());
                 return result;
             } else {

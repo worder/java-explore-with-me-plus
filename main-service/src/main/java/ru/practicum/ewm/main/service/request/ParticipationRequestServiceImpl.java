@@ -45,20 +45,26 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("Can not participate, event is not published");
         }
 
-        if (participationRequestDao.countByEventIdAndStatus(eventId, ParticipationRequest.Status.CONFIRMED)
-                .equals(event.getParticipantLimit())) {
-            throw new ConflictException("Participation limit reached for the event");
+        if (event.getParticipantLimit() > 0 && event.getConfirmedRequests().equals(event.getParticipantLimit())) {
+            throw new ConflictException("Participation limit has reached for the event");
         }
+
+        ParticipationRequest.Status status = event.getRequestModeration() ?
+                ParticipationRequest.Status.PENDING :
+                ParticipationRequest.Status.CONFIRMED;
 
         ParticipationRequest model = new ParticipationRequest();
         model.setRequesterId(userId);
-        model.setEventId(eventId);
-        model.setStatus(event.getRequestModeration() ?
-                ParticipationRequest.Status.PENDING :
-                ParticipationRequest.Status.CONFIRMED);
+        model.setEvent(event);
+        model.setStatus(status);
         model.setCreatedOn(LocalDateTime.now());
 
         ParticipationRequest savedModel = participationRequestDao.save(model);
+
+        if (status == ParticipationRequest.Status.CONFIRMED) {
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventDao.save(event);
+        }
 
         return ParticipationRequestMapper.mapToParticipationRequestDto(savedModel);
     }
@@ -71,8 +77,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new NotFoundException("Invalid user id");
         }
 
-        if (request.getStatus() !=  ParticipationRequest.Status.PENDING) {
-            throw new ConflictException("Can not cancel approved request");
+        if (request.getStatus() == ParticipationRequest.Status.CONFIRMED) {
+            Event event = request.getEvent();
+            event.setConfirmedRequests(event.getConfirmedRequests() - 1);
+            eventDao.save(event);
         }
 
         request.setStatus(ParticipationRequest.Status.CANCELED);
@@ -107,10 +115,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         Event event = eventDao.findByIdAndUserId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
-        int confirmedRequests = participationRequestDao.countByEventIdAndStatus(eventId, ParticipationRequest.Status.CONFIRMED);
+        int confirmedRequests = participationRequestDao
+                .countByEventIdAndStatus(eventId, ParticipationRequest.Status.CONFIRMED);
         int slotsAvailable = event.getParticipantLimit() - confirmedRequests;
+        boolean slotsLimited = event.getParticipantLimit() > 0;
 
-        if (slotsAvailable == 0) {
+        if (slotsLimited && slotsAvailable == 0) {
             throw new ConflictException("Participation requests limit has reached for the event");
         }
 
@@ -126,7 +136,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
             if (request.getStatus()
                     .equals(ParticipationRequestStatusUpdateRequest.ParticipationRequestStatusUpdate.CONFIRMED)
-                    && slotsAvailable > 0) {
+                    && (slotsAvailable > 0 || !slotsLimited)) {
                 r.setStatus(ParticipationRequest.Status.CONFIRMED);
                 approvedRequests.add(r);
                 slotsAvailable--;
@@ -139,7 +149,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             participationRequestDao.save(r);
         }
 
-        // TODO update event confirmed requests
+        if (confirmations > 0) {
+            event.setConfirmedRequests(event.getConfirmedRequests() + confirmations);
+            eventDao.save(event);
+        }
 
         return new ParticipationRequestStatusUpdateResultDto(
                 approvedRequests.stream().map(ParticipationRequestMapper::mapToParticipationRequestDto).toList(),

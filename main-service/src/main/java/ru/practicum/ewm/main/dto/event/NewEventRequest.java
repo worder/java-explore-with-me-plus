@@ -1,9 +1,7 @@
 package ru.practicum.ewm.main.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class NewEventRequest {
     @NotNull
+    @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
 
@@ -18,6 +17,7 @@ public class NewEventRequest {
     private Long category;
 
     @NotNull
+    @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
 
@@ -28,16 +28,15 @@ public class NewEventRequest {
     @NotNull
     private EventLocationDto location;
 
-    @NotNull
-    private Boolean paid;
+    private Boolean paid = false;
 
-    @Positive
-    private Integer participantLimit;
+    @Min(0)
+    private Integer participantLimit = 0;
 
-    @NotNull
-    private Boolean requestModeration;
+    private Boolean requestModeration = true;
 
     @NotNull
+    @NotBlank
     @Size(min = 3, max = 120)
     private String title;
 }

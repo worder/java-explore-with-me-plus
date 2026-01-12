@@ -23,7 +23,10 @@ public class ParticipationRequest {
     private Long id;
 
     private Long requesterId;
-    private Long eventId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id")
+    private Event event;
 
     @Enumerated(EnumType.STRING)
     private Status status;
