@@ -1,6 +1,8 @@
 package ru.practicum.ewm.main.service.category;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.dao.category.CategoryDao;
@@ -11,6 +13,7 @@ import ru.practicum.ewm.main.dto.category.UpdateCategoryRequest;
 import ru.practicum.ewm.main.error.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -47,6 +50,19 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long catId) {
         getCategoryOrThrow(catId);
         categoryDao.deleteById(catId);
+    }
+
+    @Override
+    public List<CategoryDto> getCategories(Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from / size, size);
+        return categoryDao.findAll(pageable).getContent().stream().map(CategoryMapper::mapToDto).toList();
+    }
+
+    @Override
+    public CategoryDto getCategory(Long id) {
+        return categoryDao.findById(id)
+                .map(CategoryMapper::mapToDto)
+                .orElseThrow(() -> new NotFoundException("Category with id=" + id + " was not found."));
     }
 
     private Category getCategoryOrThrow(Long catId) {

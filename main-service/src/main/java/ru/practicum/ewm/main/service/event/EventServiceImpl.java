@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.dao.category.CategoryDao;
@@ -19,6 +20,7 @@ import ru.practicum.ewm.main.model.User;
 import ru.practicum.ewm.main.service.statistics.StatisticsService;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -189,17 +191,30 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                               Boolean onlyAvailable, String sort,
+                                               Boolean onlyAvailable, EventSorting sort,
                                                Integer from, Integer size) {
         log.info("Получение публичных событий с параметрами: text={}, categories={}, paid={}",
                 text, categories, paid);
 
-        // TODO: sort
+        if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("End date is before start date");
+        }
 
-        Pageable pageable = PageRequest.of(from / size, size);
+        Pageable pageable;
+        if (sort != null && sort.equals(EventSorting.EVENT_DATE)) {
+            Sort sortByEventDate = Sort.by(Sort.Direction.DESC, "eventDate");
+            pageable = PageRequest.of(from / size, size, sortByEventDate);
+        } else {
+            pageable = PageRequest.of(from / size, size);
+        }
+
         List<Event> events = eventDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
+        List<EventShortDto> eventShortDtos = this.mapToShortDtos(events);
+        if (sort != null && sort.equals(EventSorting.VIEWS)) {
+            return eventShortDtos.stream().sorted(Comparator.comparing(EventShortDto::getViews).reversed()).toList();
+        }
 
-        return this.mapToShortDtos(events);
+        return eventShortDtos;
     }
 
     @Override

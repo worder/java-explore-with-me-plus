@@ -7,6 +7,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
+    enum EventSorting {
+        EVENT_DATE,
+        VIEWS
+    }
+
     EventFullDto createEvent(Long userId, NewEventRequest request);
 
     List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size);
@@ -23,7 +28,7 @@ public interface EventService {
 
     List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                        Boolean onlyAvailable, String sort,
+                                        Boolean onlyAvailable, EventSorting sort,
                                         Integer from, Integer size);
 
     EventFullDto getPublicEvent(Long id);

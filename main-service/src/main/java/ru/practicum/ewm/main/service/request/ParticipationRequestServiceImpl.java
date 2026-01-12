@@ -49,9 +49,14 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("Participation limit has reached for the event");
         }
 
-        ParticipationRequest.Status status = event.getRequestModeration() ?
+        ParticipationRequest.Status status = (event.getRequestModeration()) ?
                 ParticipationRequest.Status.PENDING :
                 ParticipationRequest.Status.CONFIRMED;
+
+        // according to postman test specification from yap
+        if (event.getParticipantLimit() == 0) {
+            status = ParticipationRequest.Status.CONFIRMED;
+        }
 
         ParticipationRequest model = new ParticipationRequest();
         model.setRequesterId(userId);
