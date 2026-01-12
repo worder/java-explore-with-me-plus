@@ -12,6 +12,8 @@ public interface UserDao {
 
     Optional<User> findById(Long id);
 
+    Optional<User> findByEmail(String email);
+
     boolean existsById(Long id);
 
     void deleteById(Long id);

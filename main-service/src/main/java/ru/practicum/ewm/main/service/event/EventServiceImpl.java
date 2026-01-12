@@ -4,19 +4,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.dao.category.CategoryDao;
 import ru.practicum.ewm.main.dao.event.EventDao;
 import ru.practicum.ewm.main.dao.user.UserDao;
 import ru.practicum.ewm.main.dto.event.*;
-import ru.practicum.ewm.main.error.exception.*;
+import ru.practicum.ewm.main.error.exception.BadRequestException;
+import ru.practicum.ewm.main.error.exception.ConflictException;
+import ru.practicum.ewm.main.error.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
 import ru.practicum.ewm.main.model.Event;
 import ru.practicum.ewm.main.model.User;
+import ru.practicum.ewm.main.service.statistics.StatisticsService;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +33,7 @@ public class EventServiceImpl implements EventService {
     private final EventDao eventDao;
     private final CategoryDao categoryDao;
     private final UserDao userDao;
+    private final StatisticsService statisticsService;
 
     @Override
     @Transactional
@@ -47,7 +54,8 @@ public class EventServiceImpl implements EventService {
         Event savedEvent = eventDao.save(event);
 
         log.info("Создано событие с ID: {}", savedEvent.getId());
-        return EventMapper.mapToFullDto(savedEvent, 0, 0);
+
+        return this.mapToFullDto(savedEvent);
     }
 
     @Override
@@ -60,9 +68,7 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventDao.findAllByUserId(userId, pageable);
 
-        return events.stream()
-                .map(event -> EventMapper.mapToShortDto(event, 0, 0))
-                .collect(Collectors.toList());
+        return this.mapToShortDtos(events);
     }
 
     @Override
@@ -73,7 +79,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Событие с ID=%d пользователя с ID=%d не найдено", eventId, userId)));
 
-        return EventMapper.mapToFullDto(event, 0, 0);
+        return this.mapToFullDto(event);
     }
 
     @Override
@@ -86,7 +92,7 @@ public class EventServiceImpl implements EventService {
                         String.format("Событие с ID=%d пользователя с ID=%d не найдено", eventId, userId)));
 
         if (event.getState() == Event.EventState.PUBLISHED) {
-            throw new ForbiddenException("Нельзя изменить опубликованное событие");
+            throw new ConflictException("Нельзя изменить опубликованное событие");
         }
 
         if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
@@ -115,7 +121,7 @@ public class EventServiceImpl implements EventService {
         Event updatedEvent = eventDao.save(event);
         log.info("Событие с ID: {} обновлено пользователем", eventId);
 
-        return EventMapper.mapToFullDto(updatedEvent, 0, 0);
+        return this.mapToFullDto(updatedEvent);
     }
 
     @Override
@@ -135,9 +141,7 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventDao.findAllByParams(users, stateEnums, categories, rangeStart, rangeEnd, pageable);
 
-        return events.stream()
-                .map(event -> EventMapper.mapToFullDto(event, 0, 0))
-                .collect(Collectors.toList());
+        return this.mapToFullDtos(events);
     }
 
     @Override
@@ -154,7 +158,7 @@ public class EventServiceImpl implements EventService {
 
         if (request.getStateAction() != null) {
             if (event.getState() != Event.EventState.PENDING) {
-                throw new ForbiddenException(
+                throw new ConflictException(
                         String.format("Событие должно быть в состоянии PENDING. Текущее состояние: %s",
                                 event.getState()));
             }
@@ -181,23 +185,36 @@ public class EventServiceImpl implements EventService {
         Event updatedEvent = eventDao.save(event);
         log.info("Событие с ID: {} обновлено администратором", eventId);
 
-        return EventMapper.mapToFullDto(updatedEvent, 0, 0);
+        return this.mapToFullDto(updatedEvent);
     }
 
     @Override
     public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                               Boolean onlyAvailable, String sort,
+                                               Boolean onlyAvailable, EventSorting sort,
                                                Integer from, Integer size) {
         log.info("Получение публичных событий с параметрами: text={}, categories={}, paid={}",
                 text, categories, paid);
 
-        Pageable pageable = PageRequest.of(from / size, size);
-        List<Event> events = eventDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
+        if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("End date is before start date");
+        }
 
-        return events.stream()
-                .map(event -> EventMapper.mapToShortDto(event, 0, 0))
-                .collect(Collectors.toList());
+        Pageable pageable;
+        if (sort != null && sort.equals(EventSorting.EVENT_DATE)) {
+            Sort sortByEventDate = Sort.by(Sort.Direction.DESC, "eventDate");
+            pageable = PageRequest.of(from / size, size, sortByEventDate);
+        } else {
+            pageable = PageRequest.of(from / size, size);
+        }
+
+        List<Event> events = eventDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
+        List<EventShortDto> eventShortDtos = this.mapToShortDtos(events);
+        if (sort != null && sort.equals(EventSorting.VIEWS)) {
+            return eventShortDtos.stream().sorted(Comparator.comparing(EventShortDto::getViews).reversed()).toList();
+        }
+
+        return eventShortDtos;
     }
 
     @Override
@@ -211,6 +228,35 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие не опубликовано");
         }
 
-        return EventMapper.mapToFullDto(event, 0, 0);
+        return this.mapToFullDto(event);
+    }
+
+    @Override
+    public List<EventShortDto> mapToShortDtos(List<Event> events) {
+        List<EventShortDto> dtos = events.stream().map(EventMapper::mapToShortDto).toList();
+
+        LocalDateTime start = events.stream()
+                .map(Event::getPublishedOn)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+
+        statisticsService.populateWithViews(start, dtos);
+        return dtos;
+    }
+
+    private EventFullDto mapToFullDto(Event event) {
+        EventFullDto dto = EventMapper.mapToFullDto(event);
+        statisticsService.populateWithViews(dto);
+        return dto;
+    }
+
+    private List<EventFullDto> mapToFullDtos(List<Event> events) {
+        List<EventFullDto> dtos = events.stream()
+                .map(EventMapper::mapToFullDto)
+                .toList();
+
+        statisticsService.populateWithViews(dtos);
+        return dtos;
     }
 }

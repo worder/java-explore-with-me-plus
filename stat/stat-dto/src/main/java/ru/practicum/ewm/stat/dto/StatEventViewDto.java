@@ -1,14 +1,13 @@
 package ru.practicum.ewm.stat.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
-@Value
+@Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class StatEventViewDto {
-    String app;
-    String uri;
-    Long hits;
+    private String app;
+    private String uri;
+    private Long hits;
 }

@@ -10,7 +10,11 @@ import ru.practicum.ewm.main.dto.event.EventFullDto;
 import ru.practicum.ewm.main.dto.event.EventShortDto;
 import ru.practicum.ewm.main.dto.event.NewEventRequest;
 import ru.practicum.ewm.main.dto.event.UpdateEventUserRequest;
+import ru.practicum.ewm.main.dto.request.ParticipationRequestDto;
+import ru.practicum.ewm.main.dto.request.ParticipationRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.dto.request.ParticipationRequestStatusUpdateResultDto;
 import ru.practicum.ewm.main.service.event.EventService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestService;
 
 import java.util.List;
 
@@ -19,6 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PvtUserEventController {
     private final EventService eventService;
+    private final ParticipationRequestService requestService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -45,5 +50,19 @@ public class PvtUserEventController {
                                     @PathVariable Long eventId,
                                     @RequestBody @Valid UpdateEventUserRequest request) {
         return eventService.updateEventByUser(userId, eventId, request);
+    }
+
+    @GetMapping("/{eventId}/requests")
+    public List<ParticipationRequestDto> getEventParticipationRequests(@PathVariable Long userId,
+                                                                       @PathVariable Long eventId) {
+        return requestService.getParticipationRequestsForUserEvent(userId, eventId);
+    }
+
+    @PatchMapping("/{eventId}/requests")
+    public ParticipationRequestStatusUpdateResultDto updateParticipationRequestStatus(
+            @PathVariable Long userId,
+            @PathVariable Long eventId,
+            @RequestBody ParticipationRequestStatusUpdateRequest request) {
+        return requestService.updateParticipationRequestsStatus(userId, eventId, request);
     }
 }

@@ -78,6 +78,9 @@ public class Event {
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
+    @Column(name = "confirmed_requests", nullable = false)
+    private Integer confirmedRequests = 0;
+
     @PrePersist
     protected void onCreate() {
         if (createdOn == null) {
