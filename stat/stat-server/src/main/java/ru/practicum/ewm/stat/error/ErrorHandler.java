@@ -4,9 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.ewm.stat.error.exception.BadRequestException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -38,6 +40,22 @@ public class ErrorHandler {
         return new ErrorResponse(
                 "Malformed JSON request or invalid parameter format",
                 e.getMostSpecificCause().getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingRequestParams(MissingServletRequestParameterException e) {
+        return new ErrorResponse(
+                "Missing required request parameters",
+                e.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(BadRequestException e) {
+        return new ErrorResponse(
+                "Bad request",
+                e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

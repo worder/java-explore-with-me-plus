@@ -37,5 +37,6 @@ public class EventFullDto {
     private Boolean paid;
     private Boolean requestModeration;
 
+    @Builder.Default
     private Integer views = 0;
 }

@@ -12,7 +12,7 @@ import ru.practicum.ewm.main.dao.event.EventDao;
 import ru.practicum.ewm.main.dao.user.UserDao;
 import ru.practicum.ewm.main.dto.event.*;
 import ru.practicum.ewm.main.error.exception.BadRequestException;
-import ru.practicum.ewm.main.error.exception.ForbiddenException;
+import ru.practicum.ewm.main.error.exception.ConflictException;
 import ru.practicum.ewm.main.error.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
 import ru.practicum.ewm.main.model.Event;
@@ -92,7 +92,7 @@ public class EventServiceImpl implements EventService {
                         String.format("Событие с ID=%d пользователя с ID=%d не найдено", eventId, userId)));
 
         if (event.getState() == Event.EventState.PUBLISHED) {
-            throw new ForbiddenException("Нельзя изменить опубликованное событие");
+            throw new ConflictException("Нельзя изменить опубликованное событие");
         }
 
         if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
@@ -158,7 +158,7 @@ public class EventServiceImpl implements EventService {
 
         if (request.getStateAction() != null) {
             if (event.getState() != Event.EventState.PENDING) {
-                throw new ForbiddenException(
+                throw new ConflictException(
                         String.format("Событие должно быть в состоянии PENDING. Текущее состояние: %s",
                                 event.getState()));
             }

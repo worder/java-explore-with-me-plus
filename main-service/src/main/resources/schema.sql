@@ -47,9 +47,3 @@ CREATE TABLE IF NOT EXISTS compilation_events (
     event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     PRIMARY KEY (compilation_id, event_id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_events_state ON events(state);
-CREATE INDEX IF NOT EXISTS idx_events_category ON events(category_id);
-CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id);
-CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date);
-

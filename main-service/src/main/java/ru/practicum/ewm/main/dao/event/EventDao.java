@@ -25,4 +25,6 @@ public interface EventDao {
                                       Pageable pageable);
 
     List<Event> findAllByIdIn(List<Long> ids);
+
+    Integer countByCategoryId(Long categoryId);
 }
