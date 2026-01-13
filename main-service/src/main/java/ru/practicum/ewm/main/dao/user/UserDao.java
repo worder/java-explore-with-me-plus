@@ -20,5 +20,5 @@ public interface UserDao {
 
     Page<User> findAll(Pageable pageable);
 
-    List<User> findAllByIdIn(List<Long> ids);
+    Page<User> findAllByIdIn(List<Long> ids, Pageable pageable);
 }

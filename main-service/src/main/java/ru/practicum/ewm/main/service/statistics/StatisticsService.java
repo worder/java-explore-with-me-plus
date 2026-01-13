@@ -21,11 +21,6 @@ import java.util.Objects;
 public class StatisticsService {
     private final StatClient client;
 
-    public StatisticsService() {
-        // FIXME: dev hack, move to config
-        this.client = new StatClient("http://localhost:9090");
-    }
-
     public void saveHit(HttpServletRequest request) {
         StatEventCreateDto dto = new StatEventCreateDto();
         dto.setApp("main-service");

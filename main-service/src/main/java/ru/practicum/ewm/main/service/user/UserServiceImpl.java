@@ -34,19 +34,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size);
-
         List<User> users;
         if (ids == null || ids.isEmpty()) {
             users = userDao.findAll(pageable).getContent();
         } else {
-            users = userDao.findAllByIdIn(ids);
-            int start = Math.min(from, users.size());
-            int end = Math.min(start + size, users.size());
-            if (start >= end) {
-                users = List.of();
-            } else {
-                users = users.subList(start, end);
-            }
+            users = userDao.findAllByIdIn(ids, pageable).getContent();
         }
 
         return users.stream()

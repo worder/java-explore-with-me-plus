@@ -1,5 +1,7 @@
 package ru.practicum.ewm.main.controller.pub;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.dto.compilation.CompilationDto;
@@ -15,8 +17,8 @@ public class PublicCompilationController {
 
     @GetMapping
     List<CompilationDto> getCompilations(@RequestParam(required = false) boolean pinned,
-                                         @RequestParam(defaultValue = "0") Integer from,
-                                         @RequestParam(defaultValue = "10") Integer size) {
+                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                         @RequestParam(defaultValue = "10") @Positive Integer size) {
         return compilationService.getCompilations(from, size, pinned);
     }
 

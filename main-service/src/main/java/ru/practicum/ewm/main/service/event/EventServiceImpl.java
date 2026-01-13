@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.dao.category.CategoryDao;
 import ru.practicum.ewm.main.dao.event.EventDao;
+import ru.practicum.ewm.main.dao.event.EventQdslDao;
 import ru.practicum.ewm.main.dao.user.UserDao;
 import ru.practicum.ewm.main.dto.event.*;
 import ru.practicum.ewm.main.error.exception.BadRequestException;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
     private final EventDao eventDao;
+    private final EventQdslDao eventQdslDao;
     private final CategoryDao categoryDao;
     private final UserDao userDao;
     private final StatisticsService statisticsService;
@@ -131,6 +133,7 @@ public class EventServiceImpl implements EventService {
         log.info("Получение событий администратором с параметрами: users={}, states={}, categories={}",
                 users, states, categories);
 
+
         List<Event.EventState> stateEnums = null;
         if (states != null) {
             stateEnums = states.stream()
@@ -139,9 +142,12 @@ public class EventServiceImpl implements EventService {
         }
 
         Pageable pageable = PageRequest.of(from / size, size);
-        List<Event> events = eventDao.findAllByParams(users, stateEnums, categories, rangeStart, rangeEnd, pageable);
+        List<Event> events = eventQdslDao
+                .findAllByParams(users, stateEnums, categories, rangeStart, rangeEnd, pageable);
 
         return this.mapToFullDtos(events);
+
+
     }
 
     @Override
@@ -200,6 +206,10 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("End date is before start date");
         }
 
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.now();
+        }
+
         Pageable pageable;
         if (sort != null && sort.equals(EventSorting.EVENT_DATE)) {
             Sort sortByEventDate = Sort.by(Sort.Direction.DESC, "eventDate");
@@ -208,7 +218,8 @@ public class EventServiceImpl implements EventService {
             pageable = PageRequest.of(from / size, size);
         }
 
-        List<Event> events = eventDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
+
+        List<Event> events = eventQdslDao.findAllPublicByParams(text, categories, paid, rangeStart, rangeEnd, pageable);
         List<EventShortDto> eventShortDtos = this.mapToShortDtos(events);
         if (sort != null && sort.equals(EventSorting.VIEWS)) {
             return eventShortDtos.stream().sorted(Comparator.comparing(EventShortDto::getViews).reversed()).toList();
