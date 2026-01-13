@@ -12,6 +12,7 @@ import ru.practicum.ewm.stat.dao.StatEventsDao;
 import ru.practicum.ewm.stat.dto.StatEventCreateDto;
 import ru.practicum.ewm.stat.dto.StatEventMapper;
 import ru.practicum.ewm.stat.dto.StatEventViewDto;
+import ru.practicum.ewm.stat.error.exception.BadRequestException;
 import ru.practicum.ewm.stat.model.QStatEvent;
 import ru.practicum.ewm.stat.model.StatEvent;
 
@@ -40,6 +41,10 @@ public class StatServiceImpl implements StatService {
             boolean unique) {
 
         QStatEvent statEvent = QStatEvent.statEvent;
+
+        if (end != null && start != null && end.isBefore(start)) {
+            throw new BadRequestException("End date is before start date");
+        }
 
         BooleanExpression searchConditions = QStatEvent.statEvent.date.between(start, end);
 
