@@ -200,6 +200,10 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("End date is before start date");
         }
 
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.now();
+        }
+
         Pageable pageable;
         if (sort != null && sort.equals(EventSorting.EVENT_DATE)) {
             Sort sortByEventDate = Sort.by(Sort.Direction.DESC, "eventDate");

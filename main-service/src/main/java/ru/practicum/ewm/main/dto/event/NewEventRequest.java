@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class NewEventRequest {
-    @NotNull
     @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
@@ -16,7 +15,6 @@ public class NewEventRequest {
     @NotNull
     private Long category;
 
-    @NotNull
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
@@ -30,12 +28,11 @@ public class NewEventRequest {
 
     private Boolean paid = false;
 
-    @Min(0)
+    @PositiveOrZero
     private Integer participantLimit = 0;
 
     private Boolean requestModeration = true;
 
-    @NotNull
     @NotBlank
     @Size(min = 3, max = 120)
     private String title;
