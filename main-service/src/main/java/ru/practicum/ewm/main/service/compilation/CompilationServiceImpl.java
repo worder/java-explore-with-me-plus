@@ -1,4 +1,4 @@
-package ru.practicum.ewm.main.service.compilation;// ... существующий импорт ...
+package ru.practicum.ewm.main.service.compilation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
