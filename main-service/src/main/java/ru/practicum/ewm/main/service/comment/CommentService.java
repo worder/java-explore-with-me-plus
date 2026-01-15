@@ -4,6 +4,7 @@ import ru.practicum.ewm.main.dto.comment.CommentDto;
 import ru.practicum.ewm.main.dto.comment.NewCommentRequest;
 import ru.practicum.ewm.main.dto.comment.UpdateCommentRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentService {
@@ -16,4 +17,16 @@ public interface CommentService {
     List<CommentDto> findUserComments(Long userId, Integer from, Integer size);
 
     CommentDto getComment(Long userId, Long commentId);
+
+    List<CommentDto> getCommentsByParams(List<Long> ids,
+                                          Long userId,
+                                          Long eventId,
+                                          LocalDateTime rangeStart,
+                                          LocalDateTime rangeEnd,
+                                          Integer from,
+                                          Integer size);
+
+    CommentDto updateCommentByAdmin(Long commentId, UpdateCommentRequest request);
+
+    void deleteCommentByAdmin(Long commentId);
 }

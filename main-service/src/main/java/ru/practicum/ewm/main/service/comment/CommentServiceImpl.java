@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.dao.comment.CommentDao;
+import ru.practicum.ewm.main.dao.comment.CommentsQdslDao;
 import ru.practicum.ewm.main.dao.event.EventDao;
 import ru.practicum.ewm.main.dao.request.ParticipationRequestDao;
 import ru.practicum.ewm.main.dao.user.UserDao;
@@ -30,6 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentDao commentDao;
+    private final CommentsQdslDao commentQdslDao;
     private final UserDao userDao;
     private final EventDao eventDao;
     private final ParticipationRequestDao participationRequestDao;
@@ -37,10 +39,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto createComment(Long userId, NewCommentRequest request) {
         User author = userDao.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User ID:" + userId + " not found"));
+                .orElseThrow(() -> new NotFoundException("User Id:" + userId + " not found"));
 
         Event event = eventDao.findById(request.getEventId())
-                .orElseThrow(() -> new NotFoundException("Event ID:" + request.getEventId() + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event Id:" + request.getEventId() + " not found"));
 
         ParticipationRequest pr = participationRequestDao.findByEventIdAndRequesterId(request.getEventId(), userId)
                 .orElseThrow(() -> new NotFoundException("User has not participated in the event"));
@@ -66,7 +68,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateComment(Long userId, Long commentId, UpdateCommentRequest request) {
         Comment comment = this.getAuthorCommentOrThrow(userId, commentId);
 
-        log.debug("Updating comment ID:{} from dto: {}, userId: {}", commentId, request, userId);
+        log.debug("Updating comment Id:{} from dto: {}, userId: {}", commentId, request, userId);
         Comment updatedComment = CommentMapper.updateComment(comment, request);
         log.info("Updated comment: {}; from dto: {}", comment, request);
 
@@ -77,11 +79,12 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long userId, Long commentId) {
         this.getAuthorCommentOrThrow(userId, commentId);
         this.commentDao.deleteById(commentId);
+        log.info("Deleted comment, Id:{}; userId: {}", commentId, userId);
     }
 
     @Override
     public List<CommentDto> findUserComments(Long userId, Integer from, Integer size) {
-        Pageable page =  PageRequest.of(from / size, size, Sort.by("createdOn").descending());
+        Pageable page = PageRequest.of(from / size, size, Sort.by("createdOn").descending());
         return commentDao.findByAuthorId(userId, page).stream()
                 .map(CommentMapper::mapToCommentDto)
                 .toList();
@@ -90,6 +93,46 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto getComment(Long userId, Long commentId) {
         return CommentMapper.mapToCommentDto(this.getAuthorCommentOrThrow(userId, commentId));
+    }
+
+    @Override
+    public List<CommentDto> getCommentsByParams(List<Long> ids,
+                                                Long userId,
+                                                Long eventId,
+                                                LocalDateTime rangeStart,
+                                                LocalDateTime rangeEnd,
+                                                Integer from,
+                                                Integer size
+    ) {
+        if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("Invalid date range, rangeEnd should be greater than rangeStart");
+        }
+
+        Pageable page = PageRequest.of(from / size, size, Sort.by("createdOn").descending());
+        return commentQdslDao.findCommentsByParams(ids, userId, eventId, rangeStart, rangeEnd, page)
+                .stream()
+                .map(CommentMapper::mapToCommentDto).toList();
+    }
+
+    @Override
+    public CommentDto updateCommentByAdmin(Long commentId, UpdateCommentRequest request) {
+        Comment comment = commentDao.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment Id:" + commentId + " not found"));
+
+        log.debug("Updating comment by admin, Id:{} from dto: {}", commentId, request);
+        Comment updatedComment = CommentMapper.updateComment(comment, request);
+        log.info("Updated comment by admin: {}; from dto: {}", comment, request);
+
+        return CommentMapper.mapToCommentDto(commentDao.save(updatedComment));
+    }
+
+    @Override
+    public void deleteCommentByAdmin(Long commentId) {
+        commentDao.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment ID:" + commentId + " not found"));
+
+        commentDao.deleteById(commentId);
+        log.info("Deleted comment by admin, Id:{}", commentId);
     }
 
     private Comment getAuthorCommentOrThrow(Long userId, Long commentId) {

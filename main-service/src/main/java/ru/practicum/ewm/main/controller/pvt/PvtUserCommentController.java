@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.controller.pvt;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.dto.comment.CommentDto;
@@ -17,7 +18,7 @@ public class PvtUserCommentController {
 
     @PostMapping
     public CommentDto createComment(@PathVariable Long userId,
-                                    @RequestBody NewCommentRequest request) {
+                                    @RequestBody @Valid NewCommentRequest request) {
         return commentService.createComment(userId, request);
     }
 
@@ -29,14 +30,15 @@ public class PvtUserCommentController {
     }
 
     @GetMapping("/{commentId}")
-    public CommentDto getComment(@PathVariable Long userId, @PathVariable Long commentId) {
+    public CommentDto getComment(@PathVariable Long userId,
+                                 @PathVariable Long commentId) {
         return commentService.getComment(userId, commentId);
     }
 
     @PatchMapping("/{commentId}")
     public CommentDto updateComment(@PathVariable Long userId,
                                     @PathVariable Long commentId,
-                                    @RequestBody UpdateCommentRequest request) {
+                                    @RequestBody @Valid UpdateCommentRequest request) {
         return commentService.updateComment(userId, commentId, request);
     }
 
