@@ -29,4 +29,13 @@ public class CommentMapper {
         commentDto.setEditedOn(comment.getEditedOn());
         return commentDto;
     }
+
+    public static Comment updateComment(Comment comment, UpdateCommentRequest request) {
+        if (request.getText() != null) {
+            comment.setText(request.getText());
+            comment.setEditedOn(LocalDateTime.now());
+        }
+
+        return comment;
+    }
 }
