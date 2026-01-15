@@ -14,7 +14,6 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class EventQdslDatabaseDao implements EventQdslDao {
-
     private final JPAQueryFactory queryFactory;
 
     @Override
