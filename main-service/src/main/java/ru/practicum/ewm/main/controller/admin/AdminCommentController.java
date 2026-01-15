@@ -28,17 +28,17 @@ public class AdminCommentController {
                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                         @RequestParam(defaultValue = "10") @Positive Integer size
     ) {
-        return commentService.getCommentsByParams(ids, userId, eventId, rangeStart, rangeEnd, from, size);
+        return commentService.getByParams(ids, userId, eventId, rangeStart, rangeEnd, from, size);
     }
 
     @PatchMapping("/{commentId}")
     public CommentDto updateComment(@PathVariable Long commentId,
                                     @RequestBody @Valid UpdateCommentRequest request) {
-        return commentService.updateCommentByAdmin(commentId, request);
+        return commentService.updateByAdmin(commentId, request);
     }
 
     @DeleteMapping
     public void deleteComment(@PathVariable Long commentId) {
-        commentService.deleteCommentByAdmin(commentId);
+        commentService.deleteByAdmin(commentId);
     }
 }

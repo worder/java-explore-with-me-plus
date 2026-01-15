@@ -8,25 +8,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentService {
-    CommentDto createComment(Long userId, NewCommentRequest request);
+    CommentDto create(Long userId, NewCommentRequest request);
 
-    CommentDto updateComment(Long userId, Long commentId, UpdateCommentRequest request);
+    CommentDto update(Long userId, Long commentId, UpdateCommentRequest request);
 
-    void deleteComment(Long userId, Long commentId);
+    void delete(Long userId, Long commentId);
 
-    List<CommentDto> findUserComments(Long userId, Integer from, Integer size);
+    CommentDto getByAuthorIdAndId(Long userId, Long commentId);
 
-    CommentDto getComment(Long userId, Long commentId);
+    CommentDto getById(Long commentId);
 
-    List<CommentDto> getCommentsByParams(List<Long> ids,
-                                          Long userId,
-                                          Long eventId,
-                                          LocalDateTime rangeStart,
-                                          LocalDateTime rangeEnd,
-                                          Integer from,
-                                          Integer size);
+    List<CommentDto> getByAuthorId(Long authorId, Integer from, Integer size);
 
-    CommentDto updateCommentByAdmin(Long commentId, UpdateCommentRequest request);
+    List<CommentDto> getByEventId(Long eventId, Integer from, Integer size);
 
-    void deleteCommentByAdmin(Long commentId);
+    List<CommentDto> getByParams(List<Long> ids,
+                                 Long userId,
+                                 Long eventId,
+                                 LocalDateTime rangeStart,
+                                 LocalDateTime rangeEnd,
+                                 Integer from,
+                                 Integer size);
+
+    CommentDto updateByAdmin(Long commentId, UpdateCommentRequest request);
+
+    void deleteByAdmin(Long commentId);
 }

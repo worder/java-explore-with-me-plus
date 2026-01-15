@@ -11,6 +11,8 @@ public interface CommentDao {
 
     List<Comment> findByAuthorId(Long userId, Pageable pageable);
 
+    List<Comment> findByEventId(Long eventId, Pageable pageable);
+
     Optional<Comment> findById(Long commentId);
 
     void deleteById(Long commentId);
