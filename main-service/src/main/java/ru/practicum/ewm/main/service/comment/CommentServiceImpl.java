@@ -77,7 +77,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void delete(Long userId, Long commentId) {
-        this.getAuthorCommentOrThrow(userId, commentId);
+        if (!commentDao.existsByAuthorIdAndId(userId, commentId)) {
+            throw new NotFoundException("Comment Id:" + commentId + " not found");
+        }
+
         this.commentDao.deleteById(commentId);
         log.info("Deleted comment, Id:{}; userId: {}", commentId, userId);
     }
@@ -142,8 +145,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteByAdmin(Long commentId) {
-        commentDao.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Comment ID:" + commentId + " not found"));
+        if (!commentDao.existsById(commentId)) {
+            throw new NotFoundException("Comment ID:" + commentId + " not found");
+        }
 
         commentDao.deleteById(commentId);
         log.info("Deleted comment by admin, Id:{}", commentId);

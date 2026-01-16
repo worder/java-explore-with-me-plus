@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateCommentRequest {
     @Size(min = 2, max = 1000)
-    String text;
+    private String text;
 }

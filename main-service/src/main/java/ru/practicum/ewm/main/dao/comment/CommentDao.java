@@ -15,5 +15,9 @@ public interface CommentDao {
 
     Optional<Comment> findById(Long commentId);
 
+    boolean existsById(Long commentId);
+
+    boolean existsByAuthorIdAndId(Long authorId, Long commentId);
+
     void deleteById(Long commentId);
 }
